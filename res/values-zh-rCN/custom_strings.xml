@@ -399,4 +399,9 @@
     <string name="search_region">搜索区域</string>
     <string name="search_region_page">搜索区域页面</string>
 
+    <!-- Volume dialog position -->
+    <string name="volume_panel_category_title">音量面板</string>
+    <string name="volume_panel_on_left_title">左侧音量面板</string>
+    <string name="volume_panel_on_left_summary">在屏幕左侧显示音量控制面板</string>
+
 </resources>
