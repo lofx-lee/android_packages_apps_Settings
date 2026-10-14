@@ -1,6 +1,5 @@
 /*
  * SPDX-FileCopyrightText: 2017-2023 The LineageOS Project
- * SPDX-FileCopyrightText: PixelOS
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,6 +8,7 @@ package com.android.settings.custom.networktraffic;
 import android.content.ContentResolver;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
 
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -21,13 +21,17 @@ import com.android.settings.SettingsPreferenceFragment;
 public class NetworkTrafficSettings extends SettingsPreferenceFragment
         implements Preference.OnPreferenceChangeListener  {
 
-    private static final String REFRESH_INTERVAL = "network_traffic_refresh_interval";
-    private static final String AUTOHIDE_THRESHOLD = "network_traffic_autohide_threshold";
+    private static final String TAG = "NetworkTrafficSettings";
+
+    private static final int UNITS_KILOBITS = 0;
+    private static final int UNITS_MEGABITS = 1;
+    private static final int UNITS_KILOBYTES = 2;
+    private static final int UNITS_MEGABYTES = 3;
+    private static final int UNITS_AUTOBYTES = 4;
 
     private ListPreference mNetTrafficMode;
     private SecureSettingSwitchPreference mNetTrafficAutohide;
-    private ListPreference mNetTrafficInterval;
-    private ListPreference mNetTrafficThreshold;
+    private ListPreference mNetTrafficUnits;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,14 +50,11 @@ public class NetworkTrafficSettings extends SettingsPreferenceFragment
         mNetTrafficAutohide = findPreference(Settings.Secure.NETWORK_TRAFFIC_AUTOHIDE);
         mNetTrafficAutohide.setOnPreferenceChangeListener(this);
 
-        mNetTrafficInterval = findPreference(REFRESH_INTERVAL);
-        mNetTrafficInterval.setOnPreferenceChangeListener(this);
-        mNetTrafficInterval.setValue(String.valueOf(Settings.Secure.getInt(
-                resolver, REFRESH_INTERVAL, 1)));
-        mNetTrafficThreshold = findPreference(AUTOHIDE_THRESHOLD);
-        mNetTrafficThreshold.setOnPreferenceChangeListener(this);
-        mNetTrafficThreshold.setValue(String.valueOf(Settings.Secure.getInt(
-                resolver, AUTOHIDE_THRESHOLD, 1)));
+        mNetTrafficUnits = findPreference(Settings.Secure.NETWORK_TRAFFIC_UNITS);
+        mNetTrafficUnits.setOnPreferenceChangeListener(this);
+        int units = Settings.Secure.getInt(resolver,
+                Settings.Secure.NETWORK_TRAFFIC_UNITS, UNITS_KILOBYTES);
+        mNetTrafficUnits.setValue(String.valueOf(units));
 
         updateEnabledStates(mode);
     }
@@ -65,9 +66,10 @@ public class NetworkTrafficSettings extends SettingsPreferenceFragment
             Settings.Secure.putInt(getActivity().getContentResolver(),
                     Settings.Secure.NETWORK_TRAFFIC_MODE, mode);
             updateEnabledStates(mode);
-        } else if (preference == mNetTrafficInterval || preference == mNetTrafficThreshold) {
+        } else if (preference == mNetTrafficUnits) {
+            int units = Integer.parseInt((String) newValue);
             Settings.Secure.putInt(getActivity().getContentResolver(),
-                    preference.getKey(), Integer.parseInt((String) newValue));
+                    Settings.Secure.NETWORK_TRAFFIC_UNITS, units);
         }
         return true;
     }
@@ -80,7 +82,6 @@ public class NetworkTrafficSettings extends SettingsPreferenceFragment
     private void updateEnabledStates(int mode) {
         final boolean enabled = mode != 0;
         mNetTrafficAutohide.setEnabled(enabled);
-        mNetTrafficInterval.setEnabled(enabled);
-        mNetTrafficThreshold.setEnabled(enabled);
+        mNetTrafficUnits.setEnabled(enabled);
     }
 }
